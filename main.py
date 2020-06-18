@@ -11,6 +11,7 @@ from googleapiclient.errors import HttpError
 
 CLIENT_SECRETS_FILE = "credentials_file.json"
 SCOPES = [
+    'openid',
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/youtube'
@@ -20,24 +21,28 @@ API_VERSION = 'v3'
 
 
 def get_authenticated_service():
-    flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
-    creds = flow.run_local_server()
-    creds_data = {
-        'token': creds.token,
-        'refresh_token': creds.refresh_token,
-        'token_uri': creds.token_uri,
-        'client_id': creds.client_id,
-        'client_secret': creds.client_secret,
-        'scopes': creds.scopes
-    }
-    session = flow.authorized_session()
-    profile_info = session.get(
-        'https://www.googleapis.com/userinfo/v2/me').json()
+	try:
+		flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
+		creds = flow.run_local_server()
+		creds_data = {
+			'token': creds.token,
+			'refresh_token': creds.refresh_token,
+			'token_uri': creds.token_uri,
+			'client_id': creds.client_id,
+			'client_secret': creds.client_secret,
+			'scopes': creds.scopes
+		}
+		session = flow.authorized_session()
+		profile_info = session.get(
+	        'https://www.googleapis.com/userinfo/v2/me').json()
+		print(profile_info)
 
-    with open("tokens/" + profile_info['name'] + ".json", 'w') as outfile:
-        json.dump(creds_data, outfile)
+		with open("tokens/" + profile_info['name'] + ".json", 'w') as outfile:
+			json.dump(creds_data, outfile)
 
-    return build(API_SERVICE_NAME, API_VERSION, credentials=creds)
+		return build(API_SERVICE_NAME, API_VERSION, credentials=creds)
+	except Exception as e:
+		print(e)
 
 
 def video_rate(**kwargs):
